@@ -1,13 +1,15 @@
 package main
 
 import (
-	"email-campaign/models"
+	"email-campaign/db"
+	"fmt"
 	"log"
+	"os"
 
+	"github.com/getsentry/sentry-go"
+	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 )
 
 func main() {
@@ -17,28 +19,42 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	//s3Bucket := os.Getenv("S3_BUCKET")
-	//secretKey := os.Getenv("SECRET_KEY")
+	db.ConnectDb()
 
-	// refer https://github.com/go-sql-driver/mysql#dsn-data-source-name for details
-	dsn := "root:@tcp(localhost:3306)/email-campaign-manager?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil {
-		log.Fatal("error: failed to connect with database")
-	}
+	app := gin.Default()
 
-	Campaign := new(models.Campaign)
-	Subscribers := new(models.Subscribers)
-	User := new(models.User)
+	setupSentry()
 
-	db.AutoMigrate(&Campaign, &User, &Subscribers)
-
-	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
+	app.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
 		})
 	})
 
-	r.Run() // listen and serve on 0.0.0.0:8080
+	app.Run() // listen and serve on 0.0.0.0:8080
+}
+
+func setupSentry() {
+
+	app := gin.Default()
+
+	// To initialize Sentry's handler, you need to initialize Sentry itself beforehand
+	if err := sentry.Init(sentry.ClientOptions{
+		Dsn:           os.Getenv("SENTRY_DSN"),
+		EnableTracing: true,
+		// Set TracesSampleRate to 1.0 to capture 100%
+		// of transactions for performance monitoring.
+		// We recommend adjusting this value in production,
+		TracesSampleRate: 1.0,
+	}); err != nil {
+		fmt.Printf("Sentry initialization failed: %v\n", err)
+	}
+
+	app.Use(sentrygin.New(sentrygin.Options{
+		Repanic: true,
+	}))
+
+	// sentrygin handler will catch it just fine. Also, because we attached "someRandomTag"
+	// in the middleware before, it will be sent through as well
+	//panic("y tho")
 }

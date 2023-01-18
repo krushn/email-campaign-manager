@@ -6,6 +6,6 @@ import (
 
 type Subscribers struct {
 	gorm.Model
-	Name  string
-	Email string
+	Name  string `gorm:"size:50" json:"name" binding:"required"`
+	Email string `gorm:"size:100" json:"email" binding:"required"`
 }
