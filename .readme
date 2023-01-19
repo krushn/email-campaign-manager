@@ -3,29 +3,13 @@
 - Upload to server 
 - React app to manage campaign
 
-- API to auth by JWT 
 - campaign CRUD 
-- user CRUD
 - subscriber CRUD
 - ability to start campaign 
 - fetch related data in api response like yii expand
-
-- swagger / api documentation 
-
-- radis 
-
+- swagger / api documentation
 - AWS S3 upload?
 
-- ability to run/ build in specific env
-
-
-//https://github.com/Massad/gin-boilerplate/blob/master/db/db.go
-
-
-Done
-
-- sentry
-- ability to use db connection variable in whole project without redeclaring
 
 Postponding 
 

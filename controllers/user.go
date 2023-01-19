@@ -11,7 +11,7 @@ import (
 // UserController ...
 type UserController struct{}
 
-var userModel = new(models.User)
+var userModel = new(models.UserModel)
 var userForm = new(forms.UserForm)
 
 // getUserID ...

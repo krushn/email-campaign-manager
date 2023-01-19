@@ -1,6 +1,7 @@
 package models
 
 import (
+	"email-campaign/db"
 	"email-campaign/forms"
 	"errors"
 	"golang.org/x/crypto/bcrypt"
@@ -9,8 +10,10 @@ import (
 
 type User struct {
 	gorm.Model
+	ID          uint64 `gorm:"primaryKey"`
 	Name        string `gorm:"size:50" json:"name" binding:"required"`
 	Email       string `gorm:"size:100" json:"email" binding:"required"`
+	Password    string `json:"-" binding:"required"`
 	PhoneNumber string `gorm:"size:15" json:"phone_number"`
 }
 
@@ -22,9 +25,9 @@ var authModel = new(AuthModel)
 // Login ...
 func (m UserModel) Login(form forms.LoginForm) (user User, token Token, err error) {
 
-	err = db.GetDB().SelectOne(&user, "SELECT id, email, password, name, updated_at, created_at FROM public.user WHERE email=LOWER($1) LIMIT 1", form.Email)
+	result := db.GetDB().Model(&user).Where("email=LOWER($1)", form.Email).First(&user)
 
-	if err != nil {
+	if result.Error != nil {
 		return user, token, err
 	}
 
@@ -58,8 +61,9 @@ func (m UserModel) Register(form forms.RegisterForm) (user User, err error) {
 	getDb := db.GetDB()
 
 	//Check if the user exists in database
-	checkUser, err := getDb.SelectInt("SELECT count(id) FROM public.user WHERE email=LOWER($1) LIMIT 1", form.Email)
-	if err != nil {
+	var checkUser int64
+	resultIfExists := getDb.Model(&user).Where("email=LOWER($1)", form.Email).Count(&checkUser)
+	if resultIfExists.Error != nil {
 		return user, errors.New("something went wrong, please try again later")
 	}
 
@@ -74,19 +78,22 @@ func (m UserModel) Register(form forms.RegisterForm) (user User, err error) {
 	}
 
 	//Create the user and return back the user ID
-	err = getDb.QueryRow("INSERT INTO public.user(email, password, name) VALUES($1, $2, $3) RETURNING id", form.Email, string(hashedPassword), form.Name).Scan(&user.ID)
-	if err != nil {
+	newUser := User{Email: form.Email, Password: string(hashedPassword), Name: form.Name}
+
+	result := getDb.Create(&newUser) // pass pointer of data to Creat
+
+	if result.Error != nil {
 		return user, errors.New("something went wrong, please try again later")
 	}
 
-	user.Name = form.Name
-	user.Email = form.Email
+	newUser.Name = form.Name
+	newUser.Email = form.Email
 
-	return user, err
+	return newUser, err
 }
 
 // One ...
-func (m UserModel) One(userID int64) (user User, err error) {
-	err = db.GetDB().SelectOne(&user, "SELECT id, email, name FROM public.user WHERE id=$1 LIMIT 1", userID)
-	return user, err
+func (m UserModel) One(userID uint64) (user User, err error) {
+	result := db.GetDB().Model(&User{}).Where("ID", userID).First(&user)
+	return user, result.Error
 }
