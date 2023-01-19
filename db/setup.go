@@ -1,19 +1,19 @@
 package db
 
 import (
-	"email-campaign/models"
 	"fmt"
+	"log"
+	"os"
+
 	_redis "github.com/go-redis/redis/v9"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"log"
-	"os"
 )
 
-var db *gorm.DB
+var connection *gorm.DB
 
 func GetDB() *gorm.DB {
-	return db
+	return connection
 }
 
 func ConnectDb() *gorm.DB {
@@ -28,7 +28,9 @@ func ConnectDb() *gorm.DB {
 		log.Fatal("error: failed to connect with database")
 	}
 
-	db.AutoMigrate(&models.Campaign{}, &models.User{}, &models.Subscribers{})
+	//db.AutoMigrate(&models.Campaign{}, &models.User{}, &models.Subscribers{})
+
+	connection = db
 
 	return db
 }

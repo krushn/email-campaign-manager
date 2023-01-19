@@ -5,6 +5,7 @@ import (
 	"email-campaign/controllers"
 	"email-campaign/db"
 	"email-campaign/forms"
+	"email-campaign/migrations"
 	"fmt"
 	"github.com/getsentry/sentry-go"
 	sentrygin "github.com/getsentry/sentry-go/gin"
@@ -36,6 +37,8 @@ func main() {
 	app.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	db.ConnectDb()
+
+	migrations.Migrate()
 
 	//Start Redis on database 1 - it's used to store the JWT but you can use it for anythig else
 	//Example: db.GetRedis().Set(KEY, VALUE, at.Sub(now)).Err()
@@ -130,8 +133,8 @@ func CORSMiddleware() gin.HandlerFunc {
 // Generate a unique ID and attach it to each request for future reference or use
 func RequestIDMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		uuid := uuid.New()
-		c.Writer.Header().Set("X-Request-Id", uuid.String())
+		uuidValue := uuid.New()
+		c.Writer.Header().Set("X-Request-Id", uuidValue.String())
 		c.Next()
 	}
 }

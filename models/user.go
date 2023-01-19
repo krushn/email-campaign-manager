@@ -4,6 +4,8 @@ import (
 	"email-campaign/db"
 	"email-campaign/forms"
 	"errors"
+	"log"
+
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -25,7 +27,7 @@ var authModel = new(AuthModel)
 // Login ...
 func (m UserModel) Login(form forms.LoginForm) (user User, token Token, err error) {
 
-	result := db.GetDB().Model(&user).Where("email=LOWER($1)", form.Email).First(&user)
+	result := db.GetDB().Model(&user).Where("email", form.Email).First(&user)
 
 	if result.Error != nil {
 		return user, token, err
@@ -51,6 +53,8 @@ func (m UserModel) Login(form forms.LoginForm) (user User, token Token, err erro
 	if saveErr == nil {
 		token.AccessToken = tokenDetails.AccessToken
 		token.RefreshToken = tokenDetails.RefreshToken
+	} else {
+		log.Panic(saveErr)
 	}
 
 	return user, token, nil
@@ -62,7 +66,7 @@ func (m UserModel) Register(form forms.RegisterForm) (user User, err error) {
 
 	//Check if the user exists in database
 	var checkUser int64
-	resultIfExists := getDb.Model(&user).Where("email=LOWER($1)", form.Email).Count(&checkUser)
+	resultIfExists := getDb.Model(&user).Where("email", form.Email).Count(&checkUser)
 	if resultIfExists.Error != nil {
 		return user, errors.New("something went wrong, please try again later")
 	}

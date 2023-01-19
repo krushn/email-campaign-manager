@@ -2,6 +2,7 @@ package forms
 
 import (
 	"encoding/json"
+	"log"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -95,6 +96,9 @@ func (f UserForm) Login(err error) string {
 
 // Register ...
 func (f UserForm) Register(err error) string {
+
+	log.Printf(err.Error())
+
 	switch err.(type) {
 	case validator.ValidationErrors:
 

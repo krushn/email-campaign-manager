@@ -1,16 +1,8 @@
-- go run main.go autoreload / livereloading
-- CI/ CD
-- Upload to server 
-- React app to manage campaign
 
-- campaign CRUD 
-- subscriber CRUD
-- ability to start campaign 
-- fetch related data in api response like yii expand
-- swagger / api documentation
-- AWS S3 upload?
+API documentation
 
+https://documenter.getpostman.com/view/1630311/2s8ZDX3hsJ
 
 Postponding 
-
+- swagger / api documentation
 - db faker/seeder
